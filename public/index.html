@@ -785,6 +785,7 @@ function renderEntries() {
     const teams = (e.teams || []).map(n => teamByName(n)).filter(Boolean);
     return teams.some(t => !isElim(t.name));
   }).length;
+  const isAdmin = !!adminToken;
 
   el.innerHTML = `
     <div class="stats-row">
@@ -792,6 +793,7 @@ function renderEntries() {
       <div class="stat-card"><div class="stat-num">${active}</div><div class="stat-label">Still in</div></div>
       <div class="stat-card"><div class="stat-num">${total - active}</div><div class="stat-label">Eliminated</div></div>
     </div>
+    ${isAdmin ? `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Admin mode — delete buttons visible.</p>` : `<p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">Enter your admin token in the Admin tab to enable delete.</p>`}
     <div class="section-label" style="margin-bottom:12px">All entries</div>
     <div class="entries-grid">
       ${[...entries].sort((a,b) => {
@@ -801,14 +803,16 @@ function renderEntries() {
       }).map(entry => {
         const teams = (entry.teams || []).map(n => teamByName(n)).filter(Boolean);
         const isIn = teams.some(t => !isElim(t.name));
+        const safeName = entry.name.replace(/'/g, "\\'");
         return `
-          <div class="entry-card ${isIn ? "" : "out"}">
+          <div class="entry-card ${isIn ? "" : "out"}" id="entry-${entry.name.replace(/\s+/g,'-')}">
             <div class="entry-top">
               <div class="e-avatar">${initials(entry.name)}</div>
-              <div>
+              <div style="flex:1">
                 <div class="e-name">${entry.name}</div>
                 <div class="e-status">${isIn ? "Still in" : "Eliminated"}</div>
               </div>
+              ${isAdmin ? `<button onclick="deleteEntry('${safeName}')" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:18px;padding:0 4px;line-height:1" title="Delete entry">✕</button>` : ""}
             </div>
             <div class="e-teams">
               ${teams.map(t => {
@@ -826,7 +830,36 @@ function renderEntries() {
         `;
       }).join("")}
     </div>
+    <div id="delete-alert" style="margin-top:1rem"></div>
   `;
+}
+
+async function deleteEntry(name) {
+  if (!confirm(`Delete ${name}'s entry? This cannot be undone.`)) return;
+  const alertEl = document.getElementById("delete-alert");
+  try {
+    const r = await fetch("/.netlify/functions/delete-entry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, token: adminToken }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      alertEl.innerHTML = `<div class="alert alert-error">${d.error || "Failed to delete."}</div>`;
+      return;
+    }
+    // Remove from local state and re-render
+    state.allEntries = state.allEntries.filter(e => e.name.toLowerCase() !== name.toLowerCase());
+    // If it was the current user's session, clear it
+    if (state.myName && state.myName.toLowerCase() === name.toLowerCase()) {
+      localStorage.removeItem("wc2026_name");
+      state.myName = null;
+    }
+    renderEntries();
+    alertEl && (alertEl.innerHTML = `<div class="alert alert-success">${name}'s entry deleted.</div>`);
+  } catch {
+    alertEl.innerHTML = `<div class="alert alert-error">Network error. Try again.</div>`;
+  }
 }
 
 // ── Matches tab ──
