@@ -866,6 +866,22 @@ async function deleteEntry(name) {
 }
 
 // ── Matches tab ──
+function fmtTime(iso) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" });
+  } catch { return ""; }
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/London" })
+      + " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" });
+  } catch { return ""; }
+}
+
 function renderMatches() {
   const el = document.getElementById("panel-matches");
   const matches = state.allMatches;
@@ -873,42 +889,60 @@ function renderMatches() {
   if (!matches.length) {
     el.innerHTML = `
       <div class="no-data">
-        No match data yet.<br/>
-        The tournament kicks off 11 June 2026.<br/>
-        <span style="font-size:12px">Add your API-Football key in Netlify env vars to enable live results.</span>
+        No fixture data yet — check back shortly.<br/>
+        <span style="font-size:12px">Data is fetched from API-Football and cached for 5 minutes.</span>
       </div>`;
     return;
   }
 
-  const now = Date.now();
   const live = matches.filter(m => ["1H","2H","HT","ET","P","LIVE"].includes(m.status));
-  const recent = matches.filter(m => m.status === "FT" || m.status === "AET" || m.status === "PEN")
-    .sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
+  const recent = matches.filter(m => ["FT","AET","PEN"].includes(m.status))
+    .sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 16);
   const upcoming = matches.filter(m => m.status === "NS")
-    .sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0, 12);
+    .sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0, 32);
 
-  function matchRow(m) {
+  // Group upcoming by date
+  const upcomingByDate = {};
+  upcoming.forEach(m => {
+    const dateKey = new Date(m.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/London" });
+    if (!upcomingByDate[dateKey]) upcomingByDate[dateKey] = [];
+    upcomingByDate[dateKey].push(m);
+  });
+
+  function matchRow(m, showTime = false) {
     const isLive = ["1H","2H","HT","ET","P"].includes(m.status);
     const hasScore = m.homeGoals !== null && m.awayGoals !== null;
+    const round = m.round ? `<span style="font-size:11px;color:var(--text-dim)">${m.round}</span>` : "";
+    const venue = m.city ? `<span style="font-size:11px;color:var(--text-dim)">${m.city}</span>` : "";
     return `
       <div class="match-card">
-        <div class="match-date">${fmtDate(m.date)}</div>
-        <div class="match-teams">
-          <span class="match-team">${m.homeTeam}</span>
-          ${hasScore
-            ? `<span class="match-score">${m.homeGoals}–${m.awayGoals}</span>`
-            : `<span class="match-vs">vs</span>`}
-          <span class="match-team">${m.awayTeam}</span>
+        <div class="match-date">${showTime ? fmtTime(m.date) : fmtDate(m.date)}</div>
+        <div class="match-teams" style="flex-direction:column;align-items:flex-start;gap:3px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="match-team">${m.homeTeam}</span>
+            ${hasScore
+              ? `<span class="match-score">${m.homeGoals}–${m.awayGoals}</span>`
+              : `<span class="match-vs">vs</span>`}
+            <span class="match-team">${m.awayTeam}</span>
+          </div>
+          <div style="display:flex;gap:8px">${round}${venue}</div>
         </div>
-        <div class="match-status ${isLive ? "live-status" : ""}">${isLive ? "● LIVE" : m.status === "NS" ? "Upcoming" : "FT"}</div>
+        <div class="match-status ${isLive ? "live-status" : ""}">${isLive ? "● LIVE" : m.status === "NS" ? "" : "FT"}</div>
       </div>
     `;
   }
 
+  const upcomingHtml = Object.entries(upcomingByDate).map(([date, ms]) => `
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--border)">${date}</div>
+      ${ms.map(m => matchRow(m, true)).join("")}
+    </div>
+  `).join("");
+
   el.innerHTML = `
-    ${live.length ? `<div class="matches-section"><h3>Live now</h3>${live.map(matchRow).join("")}</div>` : ""}
-    ${recent.length ? `<div class="matches-section"><h3>Recent results</h3>${recent.map(matchRow).join("")}</div>` : ""}
-    ${upcoming.length ? `<div class="matches-section"><h3>Upcoming</h3>${upcoming.map(matchRow).join("")}</div>` : ""}
+    ${live.length ? `<div class="matches-section"><h3>Live now</h3>${live.map(m => matchRow(m)).join("")}</div>` : ""}
+    ${recent.length ? `<div class="matches-section"><h3>Recent results</h3>${recent.map(m => matchRow(m)).join("")}</div>` : ""}
+    ${upcoming.length ? `<div class="matches-section"><h3>Upcoming fixtures</h3>${upcomingHtml}</div>` : ""}
   `;
 }
 
