@@ -493,10 +493,13 @@
 
 <script>
 // All 48 confirmed teams — groups from official draw (5 Dec 2025)
-// Tiers based on FIFA April 2026 rankings: Tier 1 = rank 1-16, Tier 2 = 17-40, Tier 3 = 41+
+// Tiers based on FIFA April 2026 rankings:
+//   Tier 1 = top 10 (rank 1–10)
+//   Tier 2 = rank 11–37 (19 teams)
+//   Tier 3 = rank 38+ (19 teams)
 const TEAMS = [
   // ── GROUP A ──
-  { name: "Mexico",             flag: "🇲🇽", group: "A", tier: 1, rank: 15 },
+  { name: "Mexico",             flag: "🇲🇽", group: "A", tier: 2, rank: 15 },
   { name: "South Korea",        flag: "🇰🇷", group: "A", tier: 2, rank: 25 },
   { name: "South Africa",       flag: "🇿🇦", group: "A", tier: 3, rank: 60 },
   { name: "Czechia",            flag: "🇨🇿", group: "A", tier: 3, rank: 41 },
@@ -511,19 +514,19 @@ const TEAMS = [
   { name: "Haiti",              flag: "🇭🇹", group: "C", tier: 3, rank: 79 },
   { name: "Scotland",           flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", group: "C", tier: 3, rank: 43 },
   // ── GROUP D ──
-  { name: "USA",                flag: "🇺🇸", group: "D", tier: 1, rank: 16 },
-  { name: "Paraguay",           flag: "🇵🇾", group: "D", tier: 2, rank: 38 },
+  { name: "USA",                flag: "🇺🇸", group: "D", tier: 2, rank: 16 },
+  { name: "Paraguay",           flag: "🇵🇾", group: "D", tier: 3, rank: 38 },
   { name: "Australia",          flag: "🇦🇺", group: "D", tier: 2, rank: 27 },
   { name: "Turkey",             flag: "🇹🇷", group: "D", tier: 2, rank: 22 },
   // ── GROUP E ──
   { name: "Germany",            flag: "🇩🇪", group: "E", tier: 1, rank: 10 },
   { name: "Curacao",            flag: "🇨🇼", group: "E", tier: 3, rank: 81 },
-  { name: "Ivory Coast",        flag: "🇨🇮", group: "E", tier: 2, rank: 39 },
+  { name: "Ivory Coast",        flag: "🇨🇮", group: "E", tier: 3, rank: 39 },
   { name: "Ecuador",            flag: "🇪🇨", group: "E", tier: 2, rank: 23 },
   // ── GROUP F ──
   { name: "Netherlands",        flag: "🇳🇱", group: "F", tier: 1, rank: 7  },
   { name: "Japan",              flag: "🇯🇵", group: "F", tier: 2, rank: 18 },
-  { name: "Sweden",             flag: "🇸🇪", group: "F", tier: 2, rank: 37 },
+  { name: "Sweden",             flag: "🇸🇪", group: "F", tier: 3, rank: 37 },
   { name: "Tunisia",            flag: "🇹🇳", group: "F", tier: 3, rank: 47 },
   // ── GROUP G ──
   { name: "Belgium",            flag: "🇧🇪", group: "G", tier: 1, rank: 9  },
@@ -534,10 +537,10 @@ const TEAMS = [
   { name: "Spain",              flag: "🇪🇸", group: "H", tier: 1, rank: 2  },
   { name: "Cape Verde",         flag: "🇨🇻", group: "H", tier: 3, rank: 70 },
   { name: "Saudi Arabia",       flag: "🇸🇦", group: "H", tier: 3, rank: 58 },
-  { name: "Uruguay",            flag: "🇺🇾", group: "H", tier: 1, rank: 17 },
+  { name: "Uruguay",            flag: "🇺🇾", group: "H", tier: 2, rank: 17 },
   // ── GROUP I ──
   { name: "France",             flag: "🇫🇷", group: "I", tier: 1, rank: 1  },
-  { name: "Senegal",            flag: "🇸🇳", group: "I", tier: 1, rank: 14 },
+  { name: "Senegal",            flag: "🇸🇳", group: "I", tier: 2, rank: 14 },
   { name: "Iraq",               flag: "🇮🇶", group: "I", tier: 3, rank: 56 },
   { name: "Norway",             flag: "🇳🇴", group: "I", tier: 2, rank: 32 },
   // ── GROUP J ──
@@ -549,10 +552,10 @@ const TEAMS = [
   { name: "Portugal",           flag: "🇵🇹", group: "K", tier: 1, rank: 5  },
   { name: "DR Congo",           flag: "🇨🇩", group: "K", tier: 3, rank: 55 },
   { name: "Uzbekistan",         flag: "🇺🇿", group: "K", tier: 3, rank: 57 },
-  { name: "Colombia",           flag: "🇨🇴", group: "K", tier: 1, rank: 13 },
+  { name: "Colombia",           flag: "🇨🇴", group: "K", tier: 2, rank: 13 },
   // ── GROUP L ──
   { name: "England",            flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", group: "L", tier: 1, rank: 4  },
-  { name: "Croatia",            flag: "🇭🇷", group: "L", tier: 1, rank: 11 },
+  { name: "Croatia",            flag: "🇭🇷", group: "L", tier: 2, rank: 11 },
   { name: "Ghana",              flag: "🇬🇭", group: "L", tier: 3, rank: 73 },
   { name: "Panama",             flag: "🇵🇦", group: "L", tier: 3, rank: 51 },
 ];
