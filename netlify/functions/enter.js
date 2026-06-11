@@ -1,4 +1,4 @@
-const { getStore } = require("@netlify/blobs");
+const { getBlobStore } = require("./blob-store");
 const { TEAMS } = require("./teams-data");
 
 const AIRTABLE_BASE_ID = "appeFHMf1LvoL2r47";
@@ -12,15 +12,10 @@ function pick(tier) {
 async function writeToAirtable(name, teams) {
   const apiKey = process.env.AIRTABLE_API_KEY;
   if (!apiKey) return;
-
   const today = new Date().toISOString().split("T")[0];
-
   await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_ID}`, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       fields: {
         "Name": name,
@@ -46,19 +41,15 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
 
   let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) };
-  }
+  try { body = JSON.parse(event.body); }
+  catch { return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) }; }
 
   const rawName = (body.name || "").trim();
   if (!rawName || rawName.length > 40) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Name is required and must be under 40 characters" }) };
   }
 
-  const store = getStore("sweepstake-entries");
-
+  const store = getBlobStore("sweepstake-entries");
   const { blobs } = await store.list();
   const existing = blobs.find(b => b.key.toLowerCase() === rawName.toLowerCase());
   if (existing) {
@@ -67,15 +58,9 @@ exports.handler = async (event) => {
 
   const teams = [pick(1), pick(2), pick(3)];
   const entry = { teams, enteredAt: new Date().toISOString() };
-
   await store.setJSON(rawName, entry);
 
-  // Write to Airtable — non-blocking, failure won't break the draw
   writeToAirtable(rawName, teams).catch(err => console.error("Airtable write failed:", err));
 
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify({ name: rawName, teams }),
-  };
+  return { statusCode: 200, headers, body: JSON.stringify({ name: rawName, teams }) };
 };

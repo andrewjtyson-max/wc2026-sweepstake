@@ -1,6 +1,5 @@
-const { getStore } = require("@netlify/blobs");
+const { getBlobStore } = require("./blob-store");
 
-// Simple token-based auth — set ADMIN_TOKEN env var in Netlify
 exports.handler = async (event) => {
   const headers = {
     "Content-Type": "application/json",
@@ -17,7 +16,7 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: "Unauthorized" }) };
   }
 
-  const store = getStore("live-cache");
+  const store = getBlobStore("live-cache");
 
   if (event.httpMethod === "GET") {
     const overrides = await store.get("manual-eliminated", { type: "json" }).catch(() => ({ teams: [] }));
@@ -26,16 +25,14 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === "POST") {
     let body;
-    try { body = JSON.parse(event.body); } catch { return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) }; }
+    try { body = JSON.parse(event.body); }
+    catch { return { statusCode: 400, headers, body: JSON.stringify({ error: "Invalid JSON" }) }; }
 
-    // Expecting { teams: ["Brazil", "France", ...] }
     if (!Array.isArray(body.teams)) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: "Expected { teams: [] }" }) };
     }
 
     await store.setJSON("manual-eliminated", { teams: body.teams, updatedAt: new Date().toISOString() });
-
-    // Bust fixture cache so next request picks up new data
     await store.delete("fixtures").catch(() => {});
 
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, teams: body.teams }) };
