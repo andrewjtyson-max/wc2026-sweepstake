@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Cup 2026 Sweepstake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f1a;
+      --bg-card: #111826;
+      --bg-card-2: #171f2e;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.14);
+      --text: #f0f2f5;
+      --text-muted: #8a93a6;
+      --text-dim: #4a5568;
+      --accent: #e8c547;
+      --accent-dim: rgba(232,197,71,0.12);
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.1);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,0.1);
+      --tier1: #f59e0b;
+      --tier1-dim: rgba(245,158,11,0.12);
+      --tier2: #60a5fa;
+      --tier2-dim: rgba(96,165,250,0.12);
+      --tier3: #94a3b8;
+      --tier3-dim: rgba(148,163,184,0.1);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .live-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .live-dot::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+    }
+    .live-dot.live::before { background: var(--green); animation: blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 2rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .tab {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -0.5px;
+      transition: color 0.15s;
+      letter-spacing: 0.2px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── ENTER ── */
+    .enter-wrap {
+      max-width: 440px;
+      margin: 3rem auto;
+      text-align: center;
+    }
+    .enter-hero {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      line-height: 1;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .enter-hero span { color: var(--accent); }
+    .enter-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .tier-explainer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
+    .tier-pill {
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .t1 { background: var(--tier1-dim); color: var(--tier1); border: 0.5px solid rgba(245,158,11,0.2); }
+    .t2 { background: var(--tier2-dim); color: var(--tier2); border: 0.5px solid rgba(96,165,250,0.2); }
+    .t3 { background: var(--tier3-dim); color: var(--tier3); border: 0.5px solid rgba(148,163,184,0.15); }
+
+    .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .text-input {
+      flex: 1;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-bright);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .text-input:focus { border-color: var(--accent); }
+    .text-input::placeholder { color: var(--text-dim); }
+    .btn {
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      background: var(--accent);
+      color: #0a0f1a;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .alert-error { background: var(--red-dim); color: var(--red); border: 0.5px solid rgba(248,113,113,0.2); }
+    .alert-success { background: var(--green-dim); color: var(--green); border: 0.5px solid rgba(74,222,128,0.2); }
+
+    /* ── DRAW ANIMATION ── */
+    .draw-box {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border-bright);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: left;
+    }
+    .draw-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .draw-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .draw-step:last-child { border-bottom: none; }
+    .step-indicator {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-bright);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-indicator.done { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+    .step-indicator.active { border-color: var(--accent); color: var(--accent); animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .step-label { font-size: 13px; color: var(--text-muted); transition: color 0.3s; }
+    .step-label.done { color: var(--text); font-weight: 500; }
+
+    /* ── MY PICKS ── */
+    .picks-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .picks-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1.5px solid rgba(232,197,71,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .picks-name { font-size: 17px; font-weight: 600; }
+    .picks-sub { font-size: 12px; color: var(--text-muted); }
+
+    .pick-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s;
+    }
+    .pick-card:hover { border-color: var(--border-bright); }
+    .pick-flag { font-size: 28px; line-height: 1; }
+    .pick-info { flex: 1; }
+    .pick-name { font-size: 16px; font-weight: 500; }
+    .pick-name.elim { text-decoration: line-through; color: var(--text-dim); }
+    .pick-group { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .tier-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .tb1 { background: var(--tier1-dim); color: var(--tier1); }
+    .tb2 { background: var(--tier2-dim); color: var(--tier2); }
+    .tb3 { background: var(--tier3-dim); color: var(--tier3); }
+    .status-tag {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .status-in { background: var(--green-dim); color: var(--green); }
+    .status-out { background: var(--red-dim); color: var(--red); }
+
+    /* ── ENTRIES ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 600; color: var(--text); }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .entries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+    .entry-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+    .entry-card.out { opacity: 0.55; }
+    .entry-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .e-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--bg-card-2);
+      border: 0.5px solid var(--border-bright);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .e-name { font-size: 14px; font-weight: 500; }
+    .e-status { font-size: 11px; color: var(--text-muted); }
+    .e-teams { display: flex; flex-direction: column; gap: 6px; }
+    .e-team-row { display: flex; align-items: center; gap: 8px; }
+    .e-flag { font-size: 16px; }
+    .e-tname { font-size: 13px; flex: 1; }
+    .e-tname.elim { text-decoration: line-through; color: var(--text-dim); }
+
+    /* ── MATCHES ── */
+    .matches-section { margin-bottom: 2rem; }
+    .matches-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .match-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .match-date { color: var(--text-muted); min-width: 60px; font-size: 12px; }
+    .match-teams { flex: 1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .match-team { font-weight: 500; }
+    .match-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      min-width: 36px;
+      text-align: center;
+    }
+    .match-vs { color: var(--text-dim); font-size: 11px; }
+    .match-status { font-size: 11px; color: var(--text-muted); min-width: 50px; text-align: right; }
+    .match-status.live-status { color: var(--green); }
+
+    .no-data {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    /* ── GROUPS ── */
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+    }
+    .group-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .group-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .g-team {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 0.5px solid var(--border);
+      font-size: 13px;
+    }
+    .g-team:last-child { border-bottom: none; }
+    .g-flag { font-size: 15px; }
+    .g-name { flex: 1; }
+    .g-name.elim { text-decoration: line-through; color: var(--text-dim); }
+    .g-tier { font-size: 10px; color: var(--text-dim); }
+
+    /* ── ADMIN ── */
+    .admin-wrap { max-width: 600px; }
+    .admin-section { margin-bottom: 2rem; }
+    .admin-section h3 { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+    .team-checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .team-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      transition: border-color 0.15s;
+    }
+    .team-check:hover { border-color: var(--border-bright); }
+    .team-check input[type=checkbox] { accent-color: var(--accent); }
+    .admin-token-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .admin-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
+
+    /* ── LOADING ── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border-bright);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 2rem auto;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem 1rem; }
+      .enter-hero { font-size: 40px; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .stat-num { font-size: 22px; }
+      .match-card { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">WC<span>2026</span> Sweepstake</div>
+  <div class="live-dot" id="live-indicator">Loading</div>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('enter')">My pick</button>
+    <button class="tab" onclick="showTab('entries')">All entries</button>
+    <button class="tab" onclick="showTab('matches')">Matches</button>
+    <button class="tab" onclick="showTab('groups')">Groups</button>
+    <button class="tab" onclick="showTab('admin')">Admin</button>
+  </div>
+
+  <div id="panel-enter" class="panel active"></div>
+  <div id="panel-entries" class="panel"></div>
+  <div id="panel-matches" class="panel"></div>
+  <div id="panel-groups" class="panel"></div>
+  <div id="panel-admin" class="panel"></div>
+</div>
+
+<script>
+// All 48 confirmed teams — groups from official draw (5 Dec 2025)
+// Tiers based on FIFA April 2026 rankings: Tier 1 = rank 1-16, Tier 2 = 17-40, Tier 3 = 41+
+const TEAMS = [
+  // ── GROUP A ──
+  { name: "Mexico",             flag: "🇲🇽", group: "A", tier: 1, rank: 15 },
+  { name: "South Korea",        flag: "🇰🇷", group: "A", tier: 2, rank: 25 },
+  { name: "South Africa",       flag: "🇿🇦", group: "A", tier: 3, rank: 60 },
+  { name: "Czechia",            flag: "🇨🇿", group: "A", tier: 3, rank: 41 },
+  // ── GROUP B ──
+  { name: "Canada",             flag: "🇨🇦", group: "B", tier: 2, rank: 30 },
+  { name: "Bosnia-Herzegovina", flag: "🇧🇦", group: "B", tier: 3, rank: 71 },
+  { name: "Qatar",              flag: "🇶🇦", group: "B", tier: 3, rank: 53 },
+  { name: "Switzerland",        flag: "🇨🇭", group: "B", tier: 2, rank: 19 },
+  // ── GROUP C ──
+  { name: "Brazil",             flag: "🇧🇷", group: "C", tier: 1, rank: 6  },
+  { name: "Morocco",            flag: "🇲🇦", group: "C", tier: 1, rank: 8  },
+  { name: "Haiti",              flag: "🇭🇹", group: "C", tier: 3, rank: 79 },
+  { name: "Scotland",           flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", group: "C", tier: 3, rank: 43 },
+  // ── GROUP D ──
+  { name: "USA",                flag: "🇺🇸", group: "D", tier: 1, rank: 16 },
+  { name: "Paraguay",           flag: "🇵🇾", group: "D", tier: 2, rank: 38 },
+  { name: "Australia",          flag: "🇦🇺", group: "D", tier: 2, rank: 27 },
+  { name: "Turkey",             flag: "🇹🇷", group: "D", tier: 2, rank: 22 },
+  // ── GROUP E ──
+  { name: "Germany",            flag: "🇩🇪", group: "E", tier: 1, rank: 10 },
+  { name: "Curacao",            flag: "🇨🇼", group: "E", tier: 3, rank: 81 },
+  { name: "Ivory Coast",        flag: "🇨🇮", group: "E", tier: 2, rank: 39 },
+  { name: "Ecuador",            flag: "🇪🇨", group: "E", tier: 2, rank: 23 },
+  // ── GROUP F ──
+  { name: "Netherlands",        flag: "🇳🇱", group: "F", tier: 1, rank: 7  },
+  { name: "Japan",              flag: "🇯🇵", group: "F", tier: 2, rank: 18 },
+  { name: "Sweden",             flag: "🇸🇪", group: "F", tier: 2, rank: 37 },
+  { name: "Tunisia",            flag: "🇹🇳", group: "F", tier: 3, rank: 47 },
+  // ── GROUP G ──
+  { name: "Belgium",            flag: "🇧🇪", group: "G", tier: 1, rank: 9  },
+  { name: "Egypt",              flag: "🇪🇬", group: "G", tier: 2, rank: 33 },
+  { name: "Iran",               flag: "🇮🇷", group: "G", tier: 2, rank: 21 },
+  { name: "New Zealand",        flag: "🇳🇿", group: "G", tier: 3, rank: 88 },
+  // ── GROUP H ──
+  { name: "Spain",              flag: "🇪🇸", group: "H", tier: 1, rank: 2  },
+  { name: "Cape Verde",         flag: "🇨🇻", group: "H", tier: 3, rank: 70 },
+  { name: "Saudi Arabia",       flag: "🇸🇦", group: "H", tier: 3, rank: 58 },
+  { name: "Uruguay",            flag: "🇺🇾", group: "H", tier: 1, rank: 17 },
+  // ── GROUP I ──
+  { name: "France",             flag: "🇫🇷", group: "I", tier: 1, rank: 1  },
+  { name: "Senegal",            flag: "🇸🇳", group: "I", tier: 1, rank: 14 },
+  { name: "Iraq",               flag: "🇮🇶", group: "I", tier: 3, rank: 56 },
+  { name: "Norway",             flag: "🇳🇴", group: "I", tier: 2, rank: 32 },
+  // ── GROUP J ──
+  { name: "Argentina",          flag: "🇦🇷", group: "J", tier: 1, rank: 3  },
+  { name: "Algeria",            flag: "🇩🇿", group: "J", tier: 2, rank: 36 },
+  { name: "Austria",            flag: "🇦🇹", group: "J", tier: 2, rank: 24 },
+  { name: "Jordan",             flag: "🇯🇴", group: "J", tier: 3, rank: 64 },
+  // ── GROUP K ──
+  { name: "Portugal",           flag: "🇵🇹", group: "K", tier: 1, rank: 5  },
+  { name: "DR Congo",           flag: "🇨🇩", group: "K", tier: 3, rank: 55 },
+  { name: "Uzbekistan",         flag: "🇺🇿", group: "K", tier: 3, rank: 57 },
+  { name: "Colombia",           flag: "🇨🇴", group: "K", tier: 1, rank: 13 },
+  // ── GROUP L ──
+  { name: "England",            flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", group: "L", tier: 1, rank: 4  },
+  { name: "Croatia",            flag: "🇭🇷", group: "L", tier: 1, rank: 11 },
+  { name: "Ghana",              flag: "🇬🇭", group: "L", tier: 3, rank: 73 },
+  { name: "Panama",             flag: "🇵🇦", group: "L", tier: 3, rank: 51 },
+];
+
+const TIER_LABELS = { 1: "Top tier", 2: "Mid tier", 3: "Lower tier" };
+const BADGE_CLASS = { 1: "tb1", 2: "tb2", 3: "tb3" };
+
+// ── State ──
+let state = {
+  myName: localStorage.getItem("wc2026_name") || null,
+  eliminated: [],
+  liveStatus: "loading",
+  allEntries: [],
+  allMatches: [],
+};
+
+function teamByName(name) { return TEAMS.find(t => t.name === name); }
+function isElim(name) { return state.eliminated.includes(name); }
+function initials(name) { return name.trim().split(/\s+/).map(w=>w[0]).join("").toUpperCase().slice(0,2); }
+function fmtDate(iso) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", { day:"numeric", month:"short" });
+  } catch { return ""; }
+}
+
+// ── API calls ──
+async function fetchEntries() {
+  const r = await fetch("/.netlify/functions/get-entries");
+  const d = await r.json();
+  state.allEntries = d.entries || [];
+}
+async function fetchLive() {
+  try {
+    const r = await fetch("/.netlify/functions/live-data");
+    const d = await r.json();
+    state.allMatches = d.matches || [];
+    const apiElim = d.eliminated || [];
+    // Merge with any manual overrides stored in state
+    state.eliminated = [...new Set([...apiElim, ...state.manualElim])];
+    state.liveStatus = d.status;
+    updateLiveIndicator();
+  } catch {
+    state.liveStatus = "error";
+    updateLiveIndicator();
+  }
+}
+
+function updateLiveIndicator() {
+  const el = document.getElementById("live-indicator");
+  if (!el) return;
+  if (state.liveStatus === "live") {
+    el.textContent = "Live";
+    el.className = "live-dot live";
+  } else if (state.liveStatus === "no_api_key") {
+    el.textContent = "No API key";
+    el.className = "live-dot";
+  } else if (state.liveStatus === "api_error") {
+    el.textContent = "Feed error";
+    el.className = "live-dot";
+  } else {
+    el.textContent = "Loading";
+    el.className = "live-dot";
+  }
+}
+
+// ── Tab system ──
+let activeTab = "enter";
+function showTab(id) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add("active");
+  document.getElementById(`panel-${id}`).classList.add("active");
+  activeTab = id;
+  renderTab(id);
+}
+function renderTab(id) {
+  if (id === "enter") renderEnter();
+  if (id === "entries") renderEntries();
+  if (id === "matches") renderMatches();
+  if (id === "groups") renderGroups();
+  if (id === "admin") renderAdmin();
+}
+
+// ── Enter tab ──
+function renderEnter() {
+  const el = document.getElementById("panel-enter");
+  if (state.myName) {
+    const entry = state.allEntries.find(e => e.name.toLowerCase() === state.myName.toLowerCase());
+    if (entry) { renderMyPicks(el, entry); return; }
+    // Name stored but entry not loaded yet
+    el.innerHTML = `<div class="spinner"></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="enter-wrap">
+      <div class="enter-hero">Pick your<br/><span>teams</span></div>
+      <p class="enter-sub">Enter your name and we'll randomly draw one team from each tier for you. You can only enter once.</p>
+      <div class="tier-explainer">
+        <div class="tier-pill t1">⭐ Top tier</div>
+        <div class="tier-pill t2">● Mid tier</div>
+        <div class="tier-pill t3">· Lower tier</div>
+      </div>
+      <div id="enter-alert"></div>
+      <div class="input-row">
+        <input class="text-input" type="text" id="name-input" placeholder="Your name" maxlength="40" />
+        <button class="btn" id="draw-btn" onclick="doEnter()">Draw</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("name-input").addEventListener("keydown", e => { if(e.key==="Enter") doEnter(); });
+}
+
+async function doEnter() {
+  const input = document.getElementById("name-input");
+  const name = input.value.trim();
+  const alertEl = document.getElementById("enter-alert");
+
+  if (!name) { alertEl.innerHTML = `<div class="alert alert-error">Please enter your name.</div>`; return; }
+
+  document.getElementById("draw-btn").disabled = true;
+  alertEl.innerHTML = "";
+
+  const el = document.getElementById("panel-enter");
+  el.innerHTML = `
+    <div class="enter-wrap">
+      <div class="draw-box">
+        <div class="draw-title">Drawing your teams</div>
+        <div class="draw-step"><div class="step-indicator active" id="si-1">↻</div><div class="step-label" id="sl-1">Picking from top tier…</div></div>
+        <div class="draw-step"><div class="step-indicator" id="si-2">2</div><div class="step-label" id="sl-2">Mid tier up next</div></div>
+        <div class="draw-step"><div class="step-indicator" id="si-3">3</div><div class="step-label" id="sl-3">Lower tier up next</div></div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("/.netlify/functions/enter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      renderEnter();
+      document.getElementById("enter-alert").innerHTML = `<div class="alert alert-error">${data.error || "Something went wrong"}</div>`;
+      return;
+    }
+
+    // Animate through steps
+    const teamObjs = data.teams.map(n => teamByName(n));
+    let step = 0;
+    function nextStep() {
+      if (step >= 3) {
+        localStorage.setItem("wc2026_name", data.name);
+        state.myName = data.name;
+        state.allEntries = state.allEntries.filter(e => e.name.toLowerCase() !== data.name.toLowerCase());
+        state.allEntries.push({ name: data.name, teams: data.teams });
+        setTimeout(() => {
+          const entry = state.allEntries.find(e => e.name.toLowerCase() === data.name.toLowerCase());
+          renderMyPicks(document.getElementById("panel-enter"), entry);
+        }, 600);
+        return;
+      }
+      const si = document.getElementById(`si-${step+1}`);
+      const sl = document.getElementById(`sl-${step+1}`);
+      if (si) { si.classList.remove("active"); si.classList.add("done"); si.textContent = "✓"; }
+      if (sl) { sl.className = "step-label done"; sl.textContent = `${TIER_LABELS[step+1]}: ${teamObjs[step]?.flag} ${teamObjs[step]?.name}`; }
+      step++;
+      if (step < 3) {
+        const next = document.getElementById(`si-${step+1}`);
+        if (next) { next.classList.add("active"); next.textContent = "↻"; }
+      }
+      setTimeout(nextStep, step < 3 ? 750 : 900);
+    }
+    setTimeout(nextStep, 600);
+
+  } catch {
+    renderEnter();
+    document.getElementById("enter-alert").innerHTML = `<div class="alert alert-error">Network error. Please try again.</div>`;
+  }
+}
+
+function renderMyPicks(el, entry) {
+  const teams = entry.teams.map(n => teamByName(n)).filter(Boolean);
+  const allOut = teams.every(t => isElim(t.name));
+  const anyOut = teams.some(t => isElim(t.name));
+
+  el.innerHTML = `
+    <div class="picks-header">
+      <div class="picks-avatar">${initials(entry.name)}</div>
+      <div>
+        <div class="picks-name">${entry.name}</div>
+        <div class="picks-sub">${allOut ? "All teams eliminated" : anyOut ? "Some teams still in" : "All teams still in"}</div>
+      </div>
+    </div>
+    ${teams.map(t => {
+      const elim = isElim(t.name);
+      return `
+        <div class="pick-card">
+          <div class="pick-flag">${t.flag}</div>
+          <div class="pick-info">
+            <div class="pick-name ${elim ? "elim" : ""}">${t.name}</div>
+            <div class="pick-group">Group ${t.group}</div>
+          </div>
+          <span class="tier-badge ${BADGE_CLASS[t.tier]}">${TIER_LABELS[t.tier]}</span>
+          <span class="status-tag ${elim ? "status-out" : "status-in"}">${elim ? "Out" : "In"}</span>
+        </div>
+      `;
+    }).join("")}
+    ${allOut ? `<div class="alert alert-error" style="margin-top:1rem">All your teams are out — better luck next time!</div>` : ""}
+    <p style="font-size:12px;color:var(--text-dim);margin-top:1rem">Not you? <a href="#" onclick="clearSession()" style="color:var(--text-muted)">Clear session</a></p>
+  `;
+}
+
+function clearSession() {
+  localStorage.removeItem("wc2026_name");
+  state.myName = null;
+  renderEnter();
+}
+
+// ── Entries tab ──
+function renderEntries() {
+  const el = document.getElementById("panel-entries");
+  const entries = state.allEntries;
+  if (!entries.length) { el.innerHTML = `<div class="no-data">No entries yet.</div>`; return; }
+
+  const total = entries.length;
+  const active = entries.filter(e => {
+    const teams = (e.teams || []).map(n => teamByName(n)).filter(Boolean);
+    return teams.some(t => !isElim(t.name));
+  }).length;
+
+  el.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Entries</div></div>
+      <div class="stat-card"><div class="stat-num">${active}</div><div class="stat-label">Still in</div></div>
+      <div class="stat-card"><div class="stat-num">${total - active}</div><div class="stat-label">Eliminated</div></div>
+    </div>
+    <div class="section-label" style="margin-bottom:12px">All entries</div>
+    <div class="entries-grid">
+      ${[...entries].sort((a,b) => {
+        const aIn = (a.teams||[]).map(n=>teamByName(n)).filter(Boolean).some(t=>!isElim(t.name));
+        const bIn = (b.teams||[]).map(n=>teamByName(n)).filter(Boolean).some(t=>!isElim(t.name));
+        return (bIn - aIn) || a.name.localeCompare(b.name);
+      }).map(entry => {
+        const teams = (entry.teams || []).map(n => teamByName(n)).filter(Boolean);
+        const isIn = teams.some(t => !isElim(t.name));
+        return `
+          <div class="entry-card ${isIn ? "" : "out"}">
+            <div class="entry-top">
+              <div class="e-avatar">${initials(entry.name)}</div>
+              <div>
+                <div class="e-name">${entry.name}</div>
+                <div class="e-status">${isIn ? "Still in" : "Eliminated"}</div>
+              </div>
+            </div>
+            <div class="e-teams">
+              ${teams.map(t => {
+                const elim = isElim(t.name);
+                return `
+                  <div class="e-team-row">
+                    <span class="e-flag">${t.flag}</span>
+                    <span class="e-tname ${elim ? "elim" : ""}">${t.name}</span>
+                    <span class="tier-badge ${BADGE_CLASS[t.tier]}" style="font-size:10px">${t.tier===1?"⭐":t.tier===2?"●":"·"}</span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+// ── Matches tab ──
+function renderMatches() {
+  const el = document.getElementById("panel-matches");
+  const matches = state.allMatches;
+
+  if (!matches.length) {
+    el.innerHTML = `
+      <div class="no-data">
+        No match data yet.<br/>
+        The tournament kicks off 11 June 2026.<br/>
+        <span style="font-size:12px">Add your API-Football key in Netlify env vars to enable live results.</span>
+      </div>`;
+    return;
+  }
+
+  const now = Date.now();
+  const live = matches.filter(m => ["1H","2H","HT","ET","P","LIVE"].includes(m.status));
+  const recent = matches.filter(m => m.status === "FT" || m.status === "AET" || m.status === "PEN")
+    .sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
+  const upcoming = matches.filter(m => m.status === "NS")
+    .sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0, 12);
+
+  function matchRow(m) {
+    const isLive = ["1H","2H","HT","ET","P"].includes(m.status);
+    const hasScore = m.homeGoals !== null && m.awayGoals !== null;
+    return `
+      <div class="match-card">
+        <div class="match-date">${fmtDate(m.date)}</div>
+        <div class="match-teams">
+          <span class="match-team">${m.homeTeam}</span>
+          ${hasScore
+            ? `<span class="match-score">${m.homeGoals}–${m.awayGoals}</span>`
+            : `<span class="match-vs">vs</span>`}
+          <span class="match-team">${m.awayTeam}</span>
+        </div>
+        <div class="match-status ${isLive ? "live-status" : ""}">${isLive ? "● LIVE" : m.status === "NS" ? "Upcoming" : "FT"}</div>
+      </div>
+    `;
+  }
+
+  el.innerHTML = `
+    ${live.length ? `<div class="matches-section"><h3>Live now</h3>${live.map(matchRow).join("")}</div>` : ""}
+    ${recent.length ? `<div class="matches-section"><h3>Recent results</h3>${recent.map(matchRow).join("")}</div>` : ""}
+    ${upcoming.length ? `<div class="matches-section"><h3>Upcoming</h3>${upcoming.map(matchRow).join("")}</div>` : ""}
+  `;
+}
+
+// ── Groups tab ──
+function renderGroups() {
+  const el = document.getElementById("panel-groups");
+  const groups = {};
+  TEAMS.forEach(t => { if (!groups[t.group]) groups[t.group] = []; groups[t.group].push(t); });
+
+  el.innerHTML = `
+    <div class="section-label" style="margin-bottom:12px">All 48 teams · ⭐ top · ● mid · · lower</div>
+    <div class="groups-grid">
+      ${Object.keys(groups).sort().map(g => `
+        <div class="group-card">
+          <div class="group-label">Group ${g}</div>
+          ${groups[g].map(t => `
+            <div class="g-team">
+              <span class="g-flag">${t.flag}</span>
+              <span class="g-name ${isElim(t.name) ? "elim" : ""}">${t.name}</span>
+              <span class="g-tier">${t.tier===1?"⭐":t.tier===2?"●":"·"}</span>
+            </div>
+          `).join("")}
+        </div>
+      `).join("")}
+    </div>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:1.5rem">Groups from official FIFA draw, 5 Dec 2025. Tiers based on FIFA April 2026 rankings.</p>
+  `;
+}
+
+// ── Admin tab ──
+let adminToken = sessionStorage.getItem("wc2026_admin") || "";
+
+function renderAdmin() {
+  const el = document.getElementById("panel-admin");
+  el.innerHTML = `
+    <div class="admin-wrap">
+      <p class="admin-hint">This panel lets you manually mark teams as eliminated during the group stage, before the API can track it automatically. Set your ADMIN_TOKEN in Netlify environment variables.</p>
+      <div class="admin-token-row">
+        <input class="text-input" type="password" id="admin-token-input" placeholder="Admin token" value="${adminToken}" style="max-width:260px" />
+        <button class="btn" onclick="saveToken()">Save token</button>
+      </div>
+      <div id="admin-alert"></div>
+      <div style="margin-bottom:1rem">
+        <button class="btn" style="background:var(--bg-card-2);color:var(--text);border:0.5px solid var(--border-bright)" onclick="loadAdminElim()">Load current eliminated teams</button>
+      </div>
+      <div id="admin-team-section"></div>
+    </div>
+  `;
+}
+
+function saveToken() {
+  adminToken = document.getElementById("admin-token-input").value.trim();
+  sessionStorage.setItem("wc2026_admin", adminToken);
+  document.getElementById("admin-alert").innerHTML = `<div class="alert alert-success">Token saved for this session.</div>`;
+}
+
+async function loadAdminElim() {
+  const alertEl = document.getElementById("admin-alert");
+  if (!adminToken) { alertEl.innerHTML = `<div class="alert alert-error">Enter your admin token first.</div>`; return; }
+
+  try {
+    const r = await fetch("/.netlify/functions/admin", { headers: { Authorization: `Bearer ${adminToken}` } });
+    if (r.status === 401) { alertEl.innerHTML = `<div class="alert alert-error">Invalid token.</div>`; return; }
+    const d = await r.json();
+    const currentElim = d.teams || [];
+    renderAdminTeams(currentElim);
+  } catch { alertEl.innerHTML = `<div class="alert alert-error">Failed to load. Check your token and try again.</div>`; }
+}
+
+function renderAdminTeams(currentElim) {
+  const sec = document.getElementById("admin-team-section");
+  sec.innerHTML = `
+    <div class="section-label" style="margin-bottom:8px">Mark eliminated teams</div>
+    <div class="team-checkbox-grid">
+      ${TEAMS.map(t => `
+        <label class="team-check">
+          <input type="checkbox" value="${t.name}" ${currentElim.includes(t.name) ? "checked" : ""} />
+          ${t.flag} ${t.name}
+        </label>
+      `).join("")}
+    </div>
+    <button class="btn" onclick="saveElim()">Save eliminated teams</button>
+    <div id="admin-save-alert" style="margin-top:10px"></div>
+  `;
+}
+
+async function saveElim() {
+  const checked = [...document.querySelectorAll("#admin-team-section input[type=checkbox]:checked")].map(c => c.value);
+  const alertEl = document.getElementById("admin-save-alert");
+  try {
+    const r = await fetch("/.netlify/functions/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify({ teams: checked }),
+    });
+    if (r.status === 401) { alertEl.innerHTML = `<div class="alert alert-error">Invalid token.</div>`; return; }
+    state.manualElim = checked;
+    state.eliminated = [...new Set([...state.eliminated, ...checked])];
+    alertEl.innerHTML = `<div class="alert alert-success">Saved ${checked.length} eliminated team(s).</div>`;
+    // Re-render other tabs if open
+  } catch { alertEl.innerHTML = `<div class="alert alert-error">Failed to save.</div>`; }
+}
+
+// ── Init ──
+state.manualElim = [];
+
+async function init() {
+  await Promise.all([fetchEntries(), fetchLive()]);
+  renderTab(activeTab);
+  // Refresh every 5 mins
+  setInterval(async () => {
+    await Promise.all([fetchEntries(), fetchLive()]);
+    renderTab(activeTab);
+  }, 5 * 60 * 1000);
+}
+
+init();
+</script>
+</body>
+</html>
