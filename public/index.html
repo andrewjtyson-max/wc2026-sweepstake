@@ -553,6 +553,33 @@
       .chk-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
       .chk-item { font-size: 12px; padding: 6px 8px; }
     }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      border-top: 0.5px solid var(--border);
+      padding: 1rem 1.5rem;
+      margin-top: 3rem;
+      display: flex;
+      justify-content: center;
+    }
+    .footer-admin-btn {
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dim);
+      background: none;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .footer-admin-btn:hover { color: var(--text-muted); border-color: var(--border-bright); }
+
+    /* ── GROUP POINTS ── */
+    .g-pts { font-size: 11px; font-weight: 600; color: var(--accent); min-width: 20px; text-align: right; }
+    .g-team-owned { background: rgba(232,197,71,0.05); }
+
   </style>
 </head>
 <body>
@@ -569,7 +596,6 @@
     <button class="tab" onclick="showTab('leaderboard')">Leaderboard</button>
     <button class="tab" onclick="showTab('matches')">Matches</button>
     <button class="tab" onclick="showTab('groups')">Groups</button>
-    <button class="tab" onclick="showTab('admin')">Admin</button>
   </div>
 
   <div id="panel-enter" class="panel active"></div>
@@ -579,6 +605,10 @@
   <div id="panel-groups" class="panel"></div>
   <div id="panel-admin" class="panel"></div>
 </div>
+
+<footer class="site-footer">
+  <button class="footer-admin-btn" onclick="showAdmin()">⚙ Admin</button>
+</footer>
 
 <script>
 // All 48 confirmed teams — groups from official draw (5 Dec 2025)
@@ -716,10 +746,21 @@ let activeTab = "enter";
 function showTab(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add("active");
+  const tabBtn = document.querySelector(`[onclick="showTab('${id}')"]`);
+  if (tabBtn) tabBtn.classList.add("active");
   document.getElementById(`panel-${id}`).classList.add("active");
   activeTab = id;
   renderTab(id);
+}
+
+function showAdmin() {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-admin").classList.add("active");
+  activeTab = "admin";
+  renderAdmin();
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 function renderTab(id) {
   if (id === "enter") renderEnter();
@@ -1037,28 +1078,77 @@ function renderMatches() {
 }
 
 // ── Groups tab ──
+function calcTeamPoints() {
+  // Returns map of team name -> { pts, w, d, l, gf, ga, played }
+  const teamStats = {};
+  TEAMS.forEach(t => { teamStats[t.name] = { pts: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, played: 0 }; });
+
+  const finished = state.allMatches.filter(m => ["FT","AET","PEN"].includes(m.status) && m.homeGoals !== null);
+  finished.forEach(m => {
+    const h = teamStats[m.homeTeam];
+    const a = teamStats[m.awayTeam];
+    if (!h || !a) return;
+    const hg = m.homeGoals, ag = m.awayGoals;
+    h.played++; h.gf += hg; h.ga += ag;
+    a.played++; a.gf += ag; a.ga += hg;
+    if (hg > ag) { h.pts += 3; h.w++; a.l++; }
+    else if (hg === ag) { h.pts += 1; h.d++; a.pts += 1; a.d++; }
+    else { a.pts += 3; a.w++; h.l++; }
+  });
+  return teamStats;
+}
+
 function renderGroups() {
   const el = document.getElementById("panel-groups");
   const groups = {};
   TEAMS.forEach(t => { if (!groups[t.group]) groups[t.group] = []; groups[t.group].push(t); });
 
+  const teamStats = calcTeamPoints();
+  const hasResults = state.allMatches.some(m => ["FT","AET","PEN"].includes(m.status));
+
+  // Build team owner map
+  const teamOwner = {};
+  state.allEntries.forEach(e => { (e.teams || []).forEach(t => { teamOwner[t] = e.name; }); });
+
   el.innerHTML = `
-    <div class="section-label" style="margin-bottom:12px">All 48 teams · ⭐ top · ● mid · · lower</div>
+    <div class="section-label" style="margin-bottom:12px">All 48 teams · ⭐ top · ● mid · · lower${hasResults ? " · Pts shown" : ""}</div>
     <div class="groups-grid">
-      ${Object.keys(groups).sort().map(g => `
+      ${Object.keys(groups).sort().map(g => {
+        // Sort by points if we have results
+        const groupTeams = hasResults
+          ? [...groups[g]].sort((a, b) => {
+              const sa = teamStats[a.name], sb = teamStats[b.name];
+              return (sb.pts - sa.pts) || ((sb.gf - sb.ga) - (sa.gf - sa.ga)) || (sb.gf - sa.gf);
+            })
+          : groups[g];
+        return `
         <div class="group-card">
-          <div class="group-label">Group ${g}</div>
-          ${groups[g].map(t => `
-            <div class="g-team">
-              <span class="g-flag">${t.flag}</span>
-              <span class="g-name ${isElim(t.name) ? "elim" : ""}">${t.name}</span>
-              <span class="g-tier">${t.tier===1?"⭐":t.tier===2?"●":"·"}</span>
-            </div>
-          `).join("")}
-        </div>
-      `).join("")}
+          <div class="group-label" style="display:flex;justify-content:space-between">
+            <span>Group ${g}</span>
+            ${hasResults ? '<span style="font-size:10px;color:var(--text-dim)">Pts</span>' : ""}
+          </div>
+          ${groupTeams.map(t => {
+            const s = teamStats[t.name];
+            const owned = teamOwner[t.name];
+            const elim = isElim(t.name);
+            return `
+              <div class="g-team ${owned ? "g-team-owned" : ""}">
+                <span class="g-flag">${t.flag}</span>
+                <span class="g-name ${elim ? "elim" : ""}">${t.name}</span>
+                ${owned ? `<span style="font-size:10px;color:var(--accent);opacity:0.7" title="${owned}">●</span>` : ""}
+                <span class="g-tier">${t.tier===1?"⭐":t.tier===2?"●":"·"}</span>
+                ${hasResults ? `<span class="g-pts">${s.played > 0 ? s.pts : "—"}</span>` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>`;
+      }).join("")}
     </div>
-    <p style="font-size:12px;color:var(--text-dim);margin-top:1.5rem">Groups from official FIFA draw, 5 Dec 2025. Tiers based on FIFA April 2026 rankings.</p>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem;font-size:12px;color:var(--text-dim)">
+      <span>Official FIFA draw, 5 Dec 2025</span>
+      ${teamOwner && Object.keys(teamOwner).length ? '<span>· <span style="color:var(--accent)">●</span> = team is picked</span>' : ""}
+      ${hasResults ? "<span>· Sorted by points</span>" : ""}
+    </div>
   `;
 }
 
@@ -1161,10 +1251,17 @@ function calcLeaderboard() {
     const hg = m.homeGoals;
     const ag = m.awayGoals;
 
+    const isH2H = homeOwner && awayOwner && homeOwner !== awayOwner;
+
     // Award points to home team owner
     if (homeOwner && stats[homeOwner]) {
       stats[homeOwner].played++;
-      if (hg > ag) { stats[homeOwner].pts += 3; stats[homeOwner].w++; }
+      if (hg > ag) {
+        stats[homeOwner].pts += 3;
+        stats[homeOwner].w++;
+        // +2 bonus for beating another player's team directly
+        if (isH2H) stats[homeOwner].pts += 2;
+      }
       else if (hg === ag) { stats[homeOwner].pts += 1; stats[homeOwner].d++; }
       else { stats[homeOwner].l++; }
     }
@@ -1172,13 +1269,18 @@ function calcLeaderboard() {
     // Award points to away team owner
     if (awayOwner && stats[awayOwner]) {
       stats[awayOwner].played++;
-      if (ag > hg) { stats[awayOwner].pts += 3; stats[awayOwner].w++; }
+      if (ag > hg) {
+        stats[awayOwner].pts += 3;
+        stats[awayOwner].w++;
+        // +2 bonus for beating another player's team directly
+        if (isH2H) stats[awayOwner].pts += 2;
+      }
       else if (ag === hg) { stats[awayOwner].pts += 1; stats[awayOwner].d++; }
       else { stats[awayOwner].l++; }
     }
 
     // If both teams are owned by different players, record h2h
-    if (homeOwner && awayOwner && homeOwner !== awayOwner) {
+    if (isH2H) {
       const key = [homeOwner, awayOwner].sort().join("|");
       if (!h2h[key]) h2h[key] = { players: [homeOwner, awayOwner].sort(), matches: [] };
       h2h[key].matches.push({
@@ -1236,7 +1338,7 @@ function renderLeaderboard() {
 
   el.innerHTML = `
     <div class="section-label" style="margin-bottom:10px">Points table</div>
-    ${!hasMatches ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem">Leaderboard will update as matches are played. All players start on 0 points.</p>` : ""}
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:1rem">Win = 3pts · Draw = 1pt · Loss = 0pts · Head to head win = +2 bonus pts${!hasMatches ? " · Leaderboard updates as matches are played" : ""}</p>
     <div class="lb-wrap">
       <table class="lb-table">
         <thead>
@@ -1283,16 +1385,16 @@ function renderLeaderboard() {
           const p1 = clash.players[0];
           const p2 = clash.players[1];
 
-          // Calc h2h points
+          // Calc h2h points (win = 3+2 bonus, draw = 1 each, loss = 0)
           let p1pts = 0, p2pts = 0;
           clash.matches.filter(m => !m.pending).forEach(m => {
             const hg = m.homeGoals, ag = m.awayGoals;
             const homeIsP1 = m.homeOwner === p1;
             const p1g = homeIsP1 ? hg : ag;
             const p2g = homeIsP1 ? ag : hg;
-            if (p1g > p2g) { p1pts += 3; }
+            if (p1g > p2g) { p1pts += 5; }       // 3 + 2 h2h bonus
             else if (p1g === p2g) { p1pts += 1; p2pts += 1; }
-            else { p2pts += 3; }
+            else { p2pts += 5; }                   // 3 + 2 h2h bonus
           });
 
           return `
