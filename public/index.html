@@ -459,6 +459,41 @@
       margin: 2rem auto;
     }
 
+    /* ── LEADERBOARD ── */
+    .lb-wrap { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-dim); padding: 8px 12px; text-align: left; border-bottom: 0.5px solid var(--border); }
+    .lb-table th.num { text-align: right; }
+    .lb-table td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); font-size: 14px; vertical-align: middle; }
+    .lb-table td.num { text-align: right; }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table tr:hover td { background: var(--bg-card-2); }
+    .lb-rank { font-size: 13px; color: var(--text-dim); font-weight: 600; }
+    .lb-rank.gold { color: #F59E0B; }
+    .lb-rank.silver { color: #94A3B8; }
+    .lb-rank.bronze { color: #B45309; }
+    .lb-name { font-weight: 500; font-size: 14px; }
+    .lb-teams { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 3px; }
+    .lb-team { font-size: 12px; color: var(--text-muted); }
+    .lb-team.elim { text-decoration: line-through; color: var(--text-dim); }
+    .lb-pts { font-size: 18px; font-weight: 600; color: var(--accent); }
+    .lb-wdl { font-size: 12px; color: var(--text-muted); }
+    .h2h-section { margin-top: 2rem; }
+    .h2h-card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 10px; }
+    .h2h-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); }
+    .h2h-players { font-size: 14px; font-weight: 500; }
+    .h2h-pts { font-size: 12px; color: var(--text-muted); }
+    .h2h-match { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+    .h2h-match:last-child { border-bottom: none; }
+    .h2h-player { flex: 1; }
+    .h2h-player-name { font-weight: 500; }
+    .h2h-player-team { font-size: 12px; color: var(--text-muted); }
+    .h2h-score { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--accent); min-width: 52px; text-align: center; }
+    .h2h-score.pending { color: var(--text-dim); font-size: 12px; font-family: 'Inter', sans-serif; letter-spacing: 0; }
+    .h2h-win { color: var(--green); }
+    .h2h-lose { color: var(--text-dim); }
+    .h2h-draw { color: var(--text-muted); }
+
     @media (max-width: 600px) {
       .container { padding: 1.5rem 1rem; }
       .enter-hero { font-size: 40px; }
@@ -479,6 +514,7 @@
   <div class="tabs">
     <button class="tab active" onclick="showTab('enter')">My pick</button>
     <button class="tab" onclick="showTab('entries')">All entries</button>
+    <button class="tab" onclick="showTab('leaderboard')">Leaderboard</button>
     <button class="tab" onclick="showTab('matches')">Matches</button>
     <button class="tab" onclick="showTab('groups')">Groups</button>
     <button class="tab" onclick="showTab('admin')">Admin</button>
@@ -486,6 +522,7 @@
 
   <div id="panel-enter" class="panel active"></div>
   <div id="panel-entries" class="panel"></div>
+  <div id="panel-leaderboard" class="panel"></div>
   <div id="panel-matches" class="panel"></div>
   <div id="panel-groups" class="panel"></div>
   <div id="panel-admin" class="panel"></div>
@@ -635,6 +672,7 @@ function showTab(id) {
 function renderTab(id) {
   if (id === "enter") renderEnter();
   if (id === "entries") renderEntries();
+  if (id === "leaderboard") renderLeaderboard();
   if (id === "matches") renderMatches();
   if (id === "groups") renderGroups();
   if (id === "admin") renderAdmin();
@@ -1044,6 +1082,201 @@ async function saveElim() {
     alertEl.innerHTML = `<div class="alert alert-success">Saved ${checked.length} eliminated team(s).</div>`;
     // Re-render other tabs if open
   } catch { alertEl.innerHTML = `<div class="alert alert-error">Failed to save.</div>`; }
+}
+
+
+// ── Leaderboard & Head to Head ──
+function calcLeaderboard() {
+  const entries = state.allEntries;
+  const matches = state.allMatches.filter(m => ["FT","AET","PEN"].includes(m.status) && m.homeGoals !== null);
+
+  // Build map: team name -> player name
+  const teamOwner = {};
+  entries.forEach(e => { (e.teams || []).forEach(t => { teamOwner[t] = e.name; }); });
+
+  // Per-player stats
+  const stats = {};
+  entries.forEach(e => {
+    stats[e.name] = { pts: 0, w: 0, d: 0, l: 0, played: 0 };
+  });
+
+  // Head to head matchups: key = "playerA|playerB" sorted, value = array of match results
+  const h2h = {};
+
+  matches.forEach(m => {
+    const homeOwner = teamOwner[m.homeTeam];
+    const awayOwner = teamOwner[m.awayTeam];
+    const hg = m.homeGoals;
+    const ag = m.awayGoals;
+
+    // Award points to home team owner
+    if (homeOwner && stats[homeOwner]) {
+      stats[homeOwner].played++;
+      if (hg > ag) { stats[homeOwner].pts += 3; stats[homeOwner].w++; }
+      else if (hg === ag) { stats[homeOwner].pts += 1; stats[homeOwner].d++; }
+      else { stats[homeOwner].l++; }
+    }
+
+    // Award points to away team owner
+    if (awayOwner && stats[awayOwner]) {
+      stats[awayOwner].played++;
+      if (ag > hg) { stats[awayOwner].pts += 3; stats[awayOwner].w++; }
+      else if (ag === hg) { stats[awayOwner].pts += 1; stats[awayOwner].d++; }
+      else { stats[awayOwner].l++; }
+    }
+
+    // If both teams are owned by different players, record h2h
+    if (homeOwner && awayOwner && homeOwner !== awayOwner) {
+      const key = [homeOwner, awayOwner].sort().join("|");
+      if (!h2h[key]) h2h[key] = { players: [homeOwner, awayOwner].sort(), matches: [] };
+      h2h[key].matches.push({
+        homeTeam: m.homeTeam, awayTeam: m.awayTeam,
+        homeOwner, awayOwner,
+        homeGoals: hg, awayGoals: ag,
+        date: m.date, round: m.round,
+      });
+    }
+  });
+
+  // Also include upcoming h2h (NS matches between owned teams)
+  const upcoming = state.allMatches.filter(m => m.status === "NS");
+  upcoming.forEach(m => {
+    const homeOwner = teamOwner[m.homeTeam];
+    const awayOwner = teamOwner[m.awayTeam];
+    if (homeOwner && awayOwner && homeOwner !== awayOwner) {
+      const key = [homeOwner, awayOwner].sort().join("|");
+      if (!h2h[key]) h2h[key] = { players: [homeOwner, awayOwner].sort(), matches: [] };
+      h2h[key].matches.push({
+        homeTeam: m.homeTeam, awayTeam: m.awayTeam,
+        homeOwner, awayOwner,
+        homeGoals: null, awayGoals: null,
+        date: m.date, round: m.round, pending: true,
+      });
+    }
+  });
+
+  // Sort leaderboard: pts desc, then w desc, then name
+  const sorted = Object.entries(stats)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.pts - a.pts || b.w - a.w || a.name.localeCompare(b.name));
+
+  return { sorted, h2h };
+}
+
+function renderLeaderboard() {
+  const el = document.getElementById("panel-leaderboard");
+  const entries = state.allEntries;
+
+  if (!entries.length) {
+    el.innerHTML = `<div class="no-data">No entries yet.</div>`;
+    return;
+  }
+
+  const hasMatches = state.allMatches.some(m => ["FT","AET","PEN"].includes(m.status));
+  const { sorted, h2h } = calcLeaderboard();
+
+  // Build team owner map for display
+  const teamOwner = {};
+  entries.forEach(e => { (e.teams || []).forEach(t => { teamOwner[t] = e.name; }); });
+
+  const rankClass = (i) => i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
+  const rankLabel = (i) => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+
+  el.innerHTML = `
+    <div class="section-label" style="margin-bottom:10px">Points table</div>
+    ${!hasMatches ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem">Leaderboard will update as matches are played. All players start on 0 points.</p>` : ""}
+    <div class="lb-wrap">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th>Player</th>
+            <th class="num">Pts</th>
+            <th class="num">P</th>
+            <th class="num">W</th>
+            <th class="num">D</th>
+            <th class="num">L</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map((p, i) => {
+            const entry = entries.find(e => e.name === p.name);
+            const teams = (entry?.teams || []).map(n => teamByName(n)).filter(Boolean);
+            return `
+              <tr>
+                <td><span class="lb-rank ${rankClass(i)}">${rankLabel(i)}</span></td>
+                <td>
+                  <div class="lb-name">${p.name}</div>
+                  <div class="lb-teams">
+                    ${teams.map(t => `<span class="lb-team ${isElim(t.name) ? "elim" : ""}">${t.flag} ${t.name}</span>`).join("")}
+                  </div>
+                </td>
+                <td class="num"><span class="lb-pts">${p.pts}</span></td>
+                <td class="num"><span class="lb-wdl">${p.played}</span></td>
+                <td class="num"><span class="lb-wdl">${p.w}</span></td>
+                <td class="num"><span class="lb-wdl">${p.d}</span></td>
+                <td class="num"><span class="lb-wdl">${p.l}</span></td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    ${Object.keys(h2h).length ? `
+      <div class="h2h-section">
+        <div class="section-label" style="margin-bottom:10px">Head to head</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem">Fixtures where two players' teams face each other directly.</p>
+        ${Object.values(h2h).map(clash => {
+          const p1 = clash.players[0];
+          const p2 = clash.players[1];
+
+          // Calc h2h points
+          let p1pts = 0, p2pts = 0;
+          clash.matches.filter(m => !m.pending).forEach(m => {
+            const hg = m.homeGoals, ag = m.awayGoals;
+            const homeIsP1 = m.homeOwner === p1;
+            const p1g = homeIsP1 ? hg : ag;
+            const p2g = homeIsP1 ? ag : hg;
+            if (p1g > p2g) { p1pts += 3; }
+            else if (p1g === p2g) { p1pts += 1; p2pts += 1; }
+            else { p2pts += 3; }
+          });
+
+          return `
+            <div class="h2h-card">
+              <div class="h2h-top">
+                <div class="h2h-players">${p1} vs ${p2}</div>
+                <div class="h2h-pts">${p1pts}–${p2pts} pts</div>
+              </div>
+              ${clash.matches.map(m => {
+                const hg = m.homeGoals, ag = m.awayGoals;
+                const finished = !m.pending;
+                const homeWin = finished && hg > ag;
+                const awayWin = finished && ag > hg;
+                const homeOwnerIsLeft = m.homeOwner === p1 || (m.awayOwner !== p1);
+                return `
+                  <div class="h2h-match">
+                    <div class="h2h-player" style="text-align:left">
+                      <div class="h2h-player-name ${finished ? (homeWin ? "h2h-win" : awayWin ? "h2h-lose" : "h2h-draw") : ""}">${m.homeOwner}</div>
+                      <div class="h2h-player-team">${teamByName(m.homeTeam)?.flag || ""} ${m.homeTeam}</div>
+                    </div>
+                    ${finished
+                      ? `<div class="h2h-score">${hg}–${ag}</div>`
+                      : `<div class="h2h-score pending">${fmtDate(m.date)}</div>`}
+                    <div class="h2h-player" style="text-align:right">
+                      <div class="h2h-player-name ${finished ? (awayWin ? "h2h-win" : homeWin ? "h2h-lose" : "h2h-draw") : ""}">${m.awayOwner}</div>
+                      <div class="h2h-player-team">${m.awayTeam} ${teamByName(m.awayTeam)?.flag || ""}</div>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    ` : `<div class="no-data" style="padding:2rem 0">No head to head matchups yet — check back once games are played.</div>`}
+  `;
 }
 
 // ── Init ──
